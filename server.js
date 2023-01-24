@@ -27,13 +27,16 @@ app.use(express.json());
 // parses received cookies
 app.use(cookieParser());
 
-// serves static files found in public folder
+// serves/displays static files found in public folder
 app.use("/", express.static(path.join(__dirname, "public")));
 
-// sends static root file (index.html)
+// route to API landing page (index.html)
 app.use("/", require("./routes/root"));
 
-// catch-all to 404 error page
+// user routes
+app.use("/users", require("./routes/userRoutes"));
+
+// catch-all route to 404 page
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {
