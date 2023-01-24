@@ -11,6 +11,8 @@
   "author": "Sarah Salvatore | Full Stack Developer",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
     "date-fns": "^2.29.3",
     "express": "^4.18.2",
     "nanoid": "^3.3.4"

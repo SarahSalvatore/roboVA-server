@@ -3,17 +3,27 @@ const app = express();
 const path = require("path");
 const { logger } = require("./middleware/logger.js");
 const errorHandler = require("./middleware/errorHandler.js");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const corsOptions = require("./config/cors/corsOptions.js");
 const PORT = process.env.PORT || 8080;
 
 // middleware to log events
 app.use(logger);
 
+// CORS setup
+app.use(cors(corsOptions));
+
 // receive and parse json data
 app.use(express.json());
+
+// parses received cookies
+app.use(cookieParser());
 
 // serves static files found in public folder
 app.use("/", express.static(path.join(__dirname, "public")));
 
+// sends static root file (index.html)
 app.use("/", require("./routes/root"));
 
 // catch-all to 404 error page
