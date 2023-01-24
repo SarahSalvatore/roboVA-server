@@ -1,11 +1,17 @@
-const { response } = require("express");
 const express = require("express");
 const app = express();
 const path = require("path");
+const { logger } = require("./middleware/logger.js");
 const PORT = process.env.PORT || 8080;
 
+// middleware to log events
+app.use(logger);
+
+// receive and parse json data
+app.use(express.json());
+
 // serves static files found in public folder
-app.use("/", express.static(path.join(__dirname, "/public")));
+app.use("/", express.static(path.join(__dirname, "public")));
 
 app.use("/", require("./routes/root"));
 
