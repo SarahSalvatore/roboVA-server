@@ -4,20 +4,20 @@ const bcrypt = require("bcrypt");
 const User = require("../models/Users.js");
 const Task = require("../models/Task.js");
 
-// GET all users
-const getAllUsers = asyncHandler(async (req, res) => {
+// GET all tasks
+const getAllTasks = asyncHandler(async (req, res) => {
   // return all users and omit password field - lean data only - do not need methods
-  const users = await User.find().select("-password").lean();
+  const tasks = await Task.find().lean();
   // if no users, send 400 status code and message
-  if (!users?.length) {
-    return res.status(400).json({ message: "No users found." });
+  if (!tasks?.length) {
+    return res.status(400).json({ message: "No tasks found." });
   }
   // send 200 status code and users
-  return res.status(200).json(users);
+  return res.status(200).json(tasks);
 });
 
-// POST new user
-const createNewUser = asyncHandler(async (req, res) => {
+// POST new task
+const createNewTask = asyncHandler(async (req, res) => {
   const { username, password, roles } = req.body;
   // if no username, password or role, send 400 status code and message
   if (!username || !password || !Array.isArray(roles) || !roles?.length) {
@@ -57,8 +57,8 @@ const createNewUser = asyncHandler(async (req, res) => {
   }
 });
 
-// PATCH user
-const updateUser = asyncHandler(async (req, res) => {
+// PATCH task
+const updateTask = asyncHandler(async (req, res) => {
   const { id, username, password, roles, active } = req.body;
   // if no id, username, role, or activeStatus, send 400 status code and message (password optional)
   if (
@@ -99,8 +99,8 @@ const updateUser = asyncHandler(async (req, res) => {
     .json({ message: `User ${updatedUser.username} has been updated.` });
 });
 
-// DELETE user
-const deleteUser = asyncHandler(async (req, res) => {
+// DELETE task
+const deleteTask = asyncHandler(async (req, res) => {
   const { id } = req.body;
   // if no id, send 400 status code and message
   if (!id) {
@@ -129,4 +129,4 @@ const deleteUser = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getAllUsers, createNewUser, updateUser, deleteUser };
+module.exports = { getAllTasks, createNewTask, updateTask, deleteTask };

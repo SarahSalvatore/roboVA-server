@@ -36,6 +36,9 @@ app.use("/", require("./routes/root"));
 // user routes
 app.use("/users", require("./routes/userRoutes"));
 
+// task routes
+app.use("/tasks", require("./routes/taskRoutes"));
+
 // catch-all route to 404 page
 app.all("*", (req, res) => {
   res.status(404);
