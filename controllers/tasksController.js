@@ -59,44 +59,45 @@ const createNewTask = asyncHandler(async (req, res) => {
 
 // PATCH task
 const updateTask = asyncHandler(async (req, res) => {
-  const { id, username, password, roles, active } = req.body;
-  // if no id, username, role, or activeStatus, send 400 status code and message (password optional)
+  const { id, user, title, text, client, completed } = req.body;
+  // if no id, user, title, text, client or completionStatus, send 400 status code and message
   if (
     !id ||
-    !username ||
-    !Array.isArray(roles) ||
-    !roles?.length ||
-    typeof active !== "boolean"
+    !user ||
+    !title ||
+    !text ||
+    !client ||
+    typeof completed !== "boolean"
   ) {
     return res.status(400).json({ message: "Missing required fields." });
   }
   // using exec as per documentation as value is being passed in
-  const user = await User.findById(id).exec();
-  // if user not found, send 400 status code and message
-  if (!user) {
-    return res.status(400).json({ message: "User not found." });
+  const task = await Task.findById(id).exec();
+  // if task not found, send 400 status code and message
+  if (!task) {
+    return res.status(400).json({ message: "Task not found." });
   }
-
-  // check if user already exists
-  const duplicateEntry = await User.findOne({ username }).lean().exec();
+  // check if duplicate task already exists
+  const duplicateEntry = await Task.findOne({ title, client }).lean().exec();
   // if duplicate, send 409 status code and message
   if (duplicateEntry && duplicateEntry._id.toString() !== id) {
-    return res.status(409).json({ message: "This username already exists." });
+    return res.status(409).json({
+      message: "A task with this title already exists for this client.",
+    });
   }
-  // update user data
-  user.username = username;
-  user.roles = roles;
-  user.active = active;
-  // if password was provided in req.body, hash password (won't always be passed in. optional)
-  if (password) {
-    user.password = await bcrypt.hash(password, 10);
-  }
+  // update task data
+  task.user = user;
+  task.title = title;
+  task.text = text;
+  task.client = client;
+  task.completed = completed;
+
   // calling save method to patch in new data - async handler will catch errors
-  const updatedUser = await user.save();
+  const updatedTask = await task.save();
   // return successful status code and message
   return res
     .status(200)
-    .json({ message: `User ${updatedUser.username} has been updated.` });
+    .json({ message: `Task ${updatedTask._id} has been updated.` });
 });
 
 // DELETE task
@@ -104,28 +105,20 @@ const deleteTask = asyncHandler(async (req, res) => {
   const { id } = req.body;
   // if no id, send 400 status code and message
   if (!id) {
-    return res.status(400).json({ message: "Missing user id." });
+    return res.status(400).json({ message: "Missing task id." });
   }
-  // check if user has assigned notes before allowing deletion
-  const assignedTasks = await Task.findOne({ user: id }).lean().exec();
+  // find task - did not use lean() as need access to functions.
+  const task = await Task.findById(id).exec();
 
-  if (assignedTasks) {
-    return res.status(400).json({
-      message: "A user with assigned tasks cannot be deleted.",
-    });
+  // if task not found, send 400 status code and message
+  if (!task) {
+    return res.status(400).json({ message: "Task not found." });
   }
-  // find user - did not use lean() as need access to functions.
-  const user = await User.findById(id).exec();
-
-  // if user not found, send 400 status code and message
-  if (!user) {
-    return res.status(400).json({ message: "User not found." });
-  }
-  // delete user - result variable will contain the deleted user's information
-  const result = await user.deleteOne();
+  // delete task - result variable will contain the deleted task's information
+  const result = await task.deleteOne();
   // if deleted, return successful message
   return res.status(200).json({
-    message: `User ${result.username} with id: ${result._id} has been deleted.`,
+    message: `Task ${result._id} has been deleted.`,
   });
 });
 
