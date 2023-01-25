@@ -20,7 +20,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 const createNewUser = asyncHandler(async (req, res) => {
   const { username, password, roles } = req.body;
   // if no username, password or role, send 400 status code and message
-  if (!username || !password || !roles.length) {
+  if (!username || !password || !roles?.length) {
     return res.status(400).json({ message: "Missing required fields." });
   }
   // check if user already exists (case insensitive)
@@ -64,7 +64,7 @@ const updateUser = asyncHandler(async (req, res) => {
   if (
     !id ||
     !username ||
-    !roles.length ||
+    !roles?.length ||
     !active ||
     typeof active !== "boolean"
   ) {
@@ -93,6 +93,33 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 // DELETE user
-const deleteUser = asyncHandler(async (req, res) => {});
+const deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.body;
+  // if no id, send 400 status code and message
+  if (!id) {
+    return res.status(400).json({ message: "Missing user id." });
+  }
+  // check if user has assigned notes before allowing deletion
+  const assignedTasks = await Task.findOne({ user: id }).lean().exec();
+
+  if (assignedTasks?.length) {
+    return res.status(400).json({
+      message: "A user with assigned tasks cannot be deleted.",
+    });
+  }
+  // find user - did not use lean() as need access to functions.
+  const user = await User.findById(id).exec();
+
+  // if user not found, send 400 status code and message
+  if (!user) {
+    return res.status(400).json({ message: "User not found." });
+  }
+  // delete user - result variable will contain the deleted user's information
+  const result = await user.deleteOne();
+  // if deleted, return successful message
+  return res.status(200).json({
+    message: `User ${result.username} with id: ${result._id} has been deleted.`,
+  });
+});
 
 module.exports = { getAllUsers, createNewUser, updateUser, deleteUser };
