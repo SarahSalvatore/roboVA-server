@@ -24,43 +24,36 @@ const getAllTasks = asyncHandler(async (req, res) => {
 
 // POST new task
 const createNewTask = asyncHandler(async (req, res) => {
-  const { user, title, text, client, completed } = req.body;
+  const { user, title, text, client } = req.body;
   // if no user, title, text or completion status, send 400 status code and message
-  if (!user || !title || !text || !client || typeof completed !== "boolean") {
+  if (!user || !title || !text || !client) {
     return res.status(400).json({ message: "Missing required fields." });
   }
   // check if task already exists
-  const duplicateEntry = await User.findOne({
-    title: title,
-    client: client,
+  const duplicateEntry = await Task.findOne({
+    title,
+    client,
   })
     .lean()
     .exec();
   // if duplicate, send 409 status code and message
   if (duplicateEntry) {
-    return res.status(409).json({ message: "Username already exists." });
+    return res.status(409).json({
+      message: "A task with this title already exists for this client.",
+    });
   }
-  // hash password - 10 salt rounds
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const users = {
-    username: username,
-    password: hashedPassword,
-    roles: roles,
-    active: true,
-  };
-  // post new user
-  const newUser = User.create(user);
-  // if user successfully created, send 201 status code and message
-  if (newUser) {
+  // create and store the new task
+  const newTask = await Task.create({ user, title, text, client });
+  // if task successfully created, send 201 status code and message
+  if (newTask) {
     return res
       .status(201)
-      .json({ message: `New user ${username} has been created.` });
+      .json({ message: `New task for ${newTask.client} has been created.` });
   } else {
     // if unsuccessful, send 400 status code and message
     return res
       .status(400)
-      .json({ message: "Something went wrong. User could not be created." });
+      .json({ message: "Something went wrong. Task could not be created." });
   }
 });
 
