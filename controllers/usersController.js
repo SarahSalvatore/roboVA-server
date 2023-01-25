@@ -1,15 +1,12 @@
+// async handler used to minimize try catch blocks
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcrypt");
 const User = require("../models/Users.js");
 const Task = require("../models/Task.js");
-const { findOne } = require("../models/Users.js");
-const { use } = require("../routes/root.js");
-
-// async handler used to minimize try catch blocks
 
 // GET all users
 const getAllUsers = asyncHandler(async (req, res) => {
-  // return all users and omit password field - lean data only
+  // return all users and omit password field - lean data only - do not need methods
   const users = await User.find().select("-password").lean();
   // if no users, send 400 status code and message
   if (!users) {
@@ -45,10 +42,8 @@ const createNewUser = asyncHandler(async (req, res) => {
     roles: roles,
     active: true,
   };
-
   // post new user
   const newUser = User.create(user);
-
   // if user successfully created, send 201 status code and message
   if (newUser) {
     return res
@@ -63,7 +58,39 @@ const createNewUser = asyncHandler(async (req, res) => {
 });
 
 // PATCH user
-const updateUser = asyncHandler(async (req, res) => {});
+const updateUser = asyncHandler(async (req, res) => {
+  const { id, username, password, roles, active } = req.body;
+  // if no id, username, role, or activeStatus, send 400 status code and message (password optional)
+  if (
+    !id ||
+    !username ||
+    !roles.length ||
+    !active ||
+    typeof active !== "boolean"
+  ) {
+    return res.status(400).json({ message: "Missing required fields." });
+  }
+  // using exec as per documentation as value is being passed in
+  const user = await User.findById(id).exec();
+  // if user not found, send 400 status code and message
+  if (!user) {
+    return res.status(400).json({ message: "User not found." });
+  }
+  // update user data
+  user.username = username;
+  user.roles = roles;
+  user.active = active;
+  // if password was provided in req.body, hash password (won't always be passed in. optional)
+  if (password) {
+    user.password = await bcrypt.hash(password, 10);
+  }
+  // calling save method to patch in new data - async handler will catch errors
+  const updatedUser = await user.save();
+  // return successful status code and message
+  return res
+    .status(200)
+    .json({ message: `User ${updatesUser.username} has been updated.` });
+});
 
 // DELETE user
 const deleteUser = asyncHandler(async (req, res) => {});
