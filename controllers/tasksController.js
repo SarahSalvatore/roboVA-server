@@ -15,7 +15,7 @@ const getAllTasks = asyncHandler(async (req, res) => {
   const taskListWithUserNames = await Promise.all(
     tasks.map(async (task) => {
       const user = await User.findById(task.user).lean().exec();
-      return { ...task, username: user.username };
+      return { ...task, user: user.username };
     })
   );
   // send 200 status code and users
@@ -109,7 +109,6 @@ const deleteTask = asyncHandler(async (req, res) => {
   }
   // find task - did not use lean() as need access to functions.
   const task = await Task.findById(id).exec();
-
   // if task not found, send 400 status code and message
   if (!task) {
     return res.status(400).json({ message: "Task not found." });
