@@ -16,6 +16,10 @@ const taskSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    client: {
+      type: String,
+      required: true,
+    },
     completed: {
       type: Boolean,
       default: false,

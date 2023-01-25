@@ -1,31 +1,38 @@
 // async handler used to minimize try catch blocks
 const asyncHandler = require("express-async-handler");
-const bcrypt = require("bcrypt");
 const User = require("../models/Users.js");
 const Task = require("../models/Task.js");
 
 // GET all tasks
 const getAllTasks = asyncHandler(async (req, res) => {
-  // return all users and omit password field - lean data only - do not need methods
+  // return all tasks - lean data only - do not need methods
   const tasks = await Task.find().lean();
-  // if no users, send 400 status code and message
+  // if no tasks, send 400 status code and message
   if (!tasks?.length) {
     return res.status(400).json({ message: "No tasks found." });
   }
+  // add the assigned user's name to the task before sending back the response
+  const taskListWithUserNames = await Promise.all(
+    tasks.map(async (task) => {
+      const user = await User.findById(task.user).lean().exec();
+      return { ...task, username: user.username };
+    })
+  );
   // send 200 status code and users
-  return res.status(200).json(tasks);
+  return res.status(200).json(taskListWithUserNames);
 });
 
 // POST new task
 const createNewTask = asyncHandler(async (req, res) => {
-  const { username, password, roles } = req.body;
-  // if no username, password or role, send 400 status code and message
-  if (!username || !password || !Array.isArray(roles) || !roles?.length) {
+  const { user, title, text, client, completed } = req.body;
+  // if no user, title, text or completion status, send 400 status code and message
+  if (!user || !title || !text || !client || typeof completed !== "boolean") {
     return res.status(400).json({ message: "Missing required fields." });
   }
-  // check if user already exists
+  // check if task already exists
   const duplicateEntry = await User.findOne({
-    username: username,
+    title: title,
+    client: client,
   })
     .lean()
     .exec();
@@ -36,7 +43,7 @@ const createNewTask = asyncHandler(async (req, res) => {
   // hash password - 10 salt rounds
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = {
+  const users = {
     username: username,
     password: hashedPassword,
     roles: roles,
