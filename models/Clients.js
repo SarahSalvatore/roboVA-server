@@ -1,21 +1,19 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.Schema(
+const clientSchema = new mongoose.Schema(
   {
-    username: {
+    name: {
       type: String,
       required: true,
     },
-    password: {
+    email: {
       type: String,
       required: true,
     },
-    roles: [
-      {
-        type: String,
-        default: "Virtual Assistant",
-      },
-    ],
+    phone: {
+      type: String,
+      required: true,
+    },
     active: {
       type: Boolean,
       default: true,
@@ -26,4 +24,4 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("Client", clientSchema);

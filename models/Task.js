@@ -17,8 +17,9 @@ const taskSchema = new mongoose.Schema(
       required: true,
     },
     client: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: "Client",
     },
     completed: {
       type: Boolean,

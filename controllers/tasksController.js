@@ -2,6 +2,7 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/Users.js");
 const Task = require("../models/Task.js");
+const Client = require("../models/Clients.js");
 
 // GET all tasks
 const getAllTasks = asyncHandler(async (req, res) => {
@@ -11,15 +12,24 @@ const getAllTasks = asyncHandler(async (req, res) => {
   if (!tasks?.length) {
     return res.status(400).json({ message: "No tasks found." });
   }
-  // add the assigned user's name to the task before sending back the response
-  const taskListWithUserNames = await Promise.all(
+  // // add the assigned user's name to the task
+  // const taskListWithUserNames = await Promise.all(
+  //   tasks.map(async (task) => {
+  //     const user = await User.findById(task.user).lean().exec();
+  //     return { ...task, user: user.username };
+  //   })
+  // );
+
+  // add the assigned user and client names to the task before sending back the response
+  const taskListWithNames = await Promise.all(
     tasks.map(async (task) => {
       const user = await User.findById(task.user).lean().exec();
-      return { ...task, user: user.username };
+      const client = await Client.findById(task.client).lean().exec();
+      return { ...task, user: user.username, client: client.name };
     })
   );
   // send 200 status code and users
-  return res.status(200).json(taskListWithUserNames);
+  return res.status(200).json(taskListWithNames);
 });
 
 // POST new task
