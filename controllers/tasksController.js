@@ -14,7 +14,6 @@ const getAllTasks = asyncHandler(async (req, res) => {
   }
 
   // add the assigned user and client names to the task before sending back the response
-  console.log(tasks);
   const taskListWithNames = await Promise.all(
     tasks.map(async (task) => {
       const user = await User.findById(task.user).lean().exec();
