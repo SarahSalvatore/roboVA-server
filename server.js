@@ -33,6 +33,9 @@ app.use("/", express.static(path.join(__dirname, "public")));
 // route to API landing page (index.html)
 app.use("/", require("./routes/root"));
 
+// auth routes
+app.use("/auth", require("./routes/authRoutes"));
+
 // user routes
 app.use("/users", require("./routes/userRoutes"));
 
