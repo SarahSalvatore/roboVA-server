@@ -23,10 +23,11 @@ const logEvents = async (message, logName) => {
   }
 };
 
-// write log to text file (reqLog.log) (note: \t are tabs)
+// write log to text file if delete operation is performed (reqLog.log) (note: \t are tabs)
 const logger = (req, res, next) => {
-  logEvents(`${req.method}\t${req.url}\t${req.headers.origin}`, "reqLog.log");
-  console.log(`${req.method} ${req.path}`);
+  if (req.method === "DELETE") {
+    logEvents(`${req.method}\t${req.url}\t${req.headers.origin}`, "reqLog.log");
+  }
   next();
 };
 

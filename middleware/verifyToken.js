@@ -16,7 +16,7 @@ const verifyToken = (req, res, next) => {
     process.env.ACCESS_TOKEN_SECRET,
     asyncHandler(async (err, decoded) => {
       if (err) {
-        return res.status(403), json({ message: "Forbidden" });
+        return res.status(403).json({ message: "Forbidden" });
       }
       req.user = decoded.UserInfo.username;
       req.roles = decoded.UserInfo.roles;
