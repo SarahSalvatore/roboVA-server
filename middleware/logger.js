@@ -6,6 +6,7 @@ const path = require("path");
 
 // log events with date, time, logId and message (note: \t are tabs, \n is a new line)
 const logEvents = async (message, logName) => {
+  console.log('HELLO');
   const dateTime = format(new Date(), "yyyyMMdd\tHH:mm:ss");
   const logEntry = `${dateTime}\t${nanoid()}\t${message}\n`;
 
